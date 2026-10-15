@@ -11,7 +11,13 @@ from dotenv import load_dotenv
 
 # Load environment
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
-BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:5000")
+BACKEND_URL = os.getenv("BACKEND_URL")
+if not BACKEND_URL:
+    try:
+        BACKEND_URL = st.secrets.get("BACKEND_URL", "http://127.0.0.1:5000")
+    except Exception:
+        BACKEND_URL = "http://127.0.0.1:5000"
+BACKEND_URL = str(BACKEND_URL).rstrip("/")
 
 # ════════════════════════════════════════════════════════════════════════
 # PAGE CONFIG
@@ -350,6 +356,27 @@ with st.sidebar:
         st.markdown("### Recent Searches")
         for past_q in st.session_state.search_history[-5:]:
             st.markdown(f"- {past_q}")
+
+    st.markdown("---")
+    st.markdown("### 🔌 Backend Status")
+    custom_backend = st.text_input(
+        "Backend API URL",
+        value=BACKEND_URL,
+        help="Flask API base URL",
+        key="custom_backend_url",
+    )
+    if custom_backend:
+        BACKEND_URL = custom_backend.strip().rstrip("/")
+
+    if st.button("Test API Connection", use_container_width=True):
+        try:
+            r = requests.get(f"{BACKEND_URL}/api/health", timeout=5)
+            if r.status_code == 200:
+                st.success("Connected to Backend ✅")
+            else:
+                st.warning(f"Response: {r.status_code}")
+        except Exception as ex:
+            st.error(f"Cannot reach backend: {ex}")
 
 
 # ════════════════════════════════════════════════════════════════════════

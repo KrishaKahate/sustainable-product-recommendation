@@ -126,6 +126,57 @@ streamlit run frontend/streamlit_app.py
 
 Opens on `http://localhost:8501`.
 
+## 🚀 Deployment
+
+### Option 1: Render (Backend) + Streamlit Community Cloud (Frontend) [Recommended]
+
+This application has a separate backend and frontend. The recommended free deployment setup is:
+
+#### 1. Deploy the Backend on Render
+1. Go to [render.com](https://render.com) and sign in with GitHub.
+2. Click **New +** → **Web Service**.
+3. Select your repository: `KrishaKahate/sustainable-product-recommendation`.
+4. Fill in the settings:
+   - **Name**: `sustainable-product-backend`
+   - **Environment**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn --bind 0.0.0.0:$PORT backend.app:app`
+5. In **Environment Variables**, add:
+   - `XAI_API_KEY`: *(your xAI or Groq key)*
+   - `TAVILY_API_KEY`: *(your Tavily key)*
+   - `GROK_MODEL`: `qwen/qwen3.8-27b` (or your chosen model)
+6. Click **Deploy Web Service**.
+7. Once deployed, copy your backend URL (e.g., `https://sustainable-product-backend.onrender.com`). Verify it with:
+   ```bash
+   curl https://sustainable-product-backend.onrender.com/api/health
+   # Returns: {"status": "ok"}
+   ```
+
+#### 2. Deploy the Frontend on Streamlit Community Cloud
+1. Go to [share.streamlit.io](https://share.streamlit.io) and log in with GitHub.
+2. Click **New app**.
+3. Select your repository: `KrishaKahate/sustainable-product-recommendation`.
+4. Set:
+   - **Branch**: `main`
+   - **Main file path**: `frontend/streamlit_app.py` (or `streamlit_app.py`)
+5. Open **Advanced Settings** → **Secrets**, and add:
+   ```toml
+   BACKEND_URL = "https://your-backend-service.onrender.com"
+   ```
+   *(Replace with your actual Render URL from Step 1)*
+6. Click **Deploy!**
+
+---
+
+### Option 2: Docker Compose
+
+To run both services in containers with a single command:
+```bash
+docker-compose up --build
+```
+- Backend will be available at `http://localhost:5000`
+- Frontend will be available at `http://localhost:8501`
+
 ## Usage
 
 ### Example Query
